@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>契約の刻 - 勇者だいちゃん</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel: rgba(10,14,20,.62);
+      --panel2: rgba(10,14,20,.78);
+      --line: rgba(255,255,255,.14);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+      --accent: #67f3a3;
+      --danger: #ff4b4b;
+      --gold: #ffc857;
+      --shadow: 0 14px 34px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --jp: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: var(--jp);
+      color: var(--text);
+      background: var(--bg);
+      overflow-x:hidden;
+    }
+
+    /* 背景 */
+    .bg{
+      position:fixed; inset:0;
+      background: #000;
+      z-index:-2;
+    }
+    .bg::before{
+      content:"";
+      position:absolute; inset:0;
+      background: url("bg.png") center/cover no-repeat;
+      filter: saturate(1.08) contrast(1.05) brightness(.85);
+      transform: scale(1.03);
+    }
+    .bg::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(1200px 700px at 40% 15%, rgba(0,0,0,.18), rgba(0,0,0,.72)),
+        linear-gradient(to bottom, rgba(0,0,0,.40), rgba(0,0,0,.78));
+      z-index:1;
+    }
+
+    /* レイアウト */
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px 14px 44px;
+    }
+
+    /* 常設：契約書パネル（上部固定） */
+    .contractDock{
+      position: sticky;
+      top: 10px;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+    }
+    .contract{
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .contractHeader{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .badge{
+      font-weight: 800;
+      letter-spacing:.06em;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.25);
+      white-space: nowrap;
+    }
+    .badge.danger{ border-color: rgba(255,75,75,.35); color: rgba(255,215,215,.95); }
+    .badge.good{ border-color: rgba(103,243,163,.35); color: rgba(210,255,232,.95); }
+
+    .contractTitle{
+      font-weight: 800;
+      font-size: 13px;
+      color: rgba(255,255,255,.92);
+      margin-right:auto;
+    }
+    .btn{
+      appearance:none; border:none;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.14);
+      color: rgba(255,255,255,.92);
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor:pointer;
+      font-weight: 700;
+      font-size: 12px;
+      transition: transform .08s ease, background .15s ease;
+    }
+    .btn:hover{ background: rgba(255,255,255,.14); }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      background: rgba(103,243,163,.14);
+      border-color: rgba(103,243,163,.35);
+    }
+    .btn.danger{
+      background: rgba(255,75,75,.12);
+      border-color: rgba(255,75,75,.26);
+    }
+
+    .contractBody{
+      padding: 10px 12px 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .contractGrid{
+      display:grid;
+      gap:10px;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 720px){
+      .contractGrid{ grid-template-columns: 1fr; }
+    }
+
+    .field{
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      background: rgba(0,0,0,.22);
+      padding: 10px 10px 10px;
+      min-height: 58px;
+    }
+    .fieldLabel{
+      font-size: 11px;
+      color: rgba(255,255,255,.70);
+      letter-spacing: .08em;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .fieldValue{
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.35;
+      color: rgba(255,255,255,.95);
+      word-break: break-word;
+    }
+    .fieldValue.danger{ color: rgba(255,165,165,.96); }
+    .fieldValue.good{ color: rgba(200,255,225,.96); }
+
+    .hint{
+      font-size: 11px;
+      color: rgba(255,255,255,.65);
+      line-height: 1.35;
+    }
+
+    /* メイン */
+    .main{
+      margin-top: 14px;
+      display:grid;
+      gap: 14px;
+      grid-template-columns: 1fr;
+    }
+
+    /* ヒーロー */
+    .heroPanel{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      position: relative;
+      overflow:hidden;
+    }
+    .topRow{
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .date{
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(255,255,255,.70);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      white-space: nowrap;
+    }
+
+    .heroRow{
+      display:flex;
+      gap: 12px;
+      align-items:center;
+    }
+
+    /* ★勇者イラストを大きく（見えるように） */
+    .heroImg{
+      width: 160px;
+      height: 160px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex: 0 0 auto;
+    }
+    .heroImg img{
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    @media (max-width: 640px){
+      .heroImg{ width: 130px; height: 130px; }
+    }
+
+    .heroMeta{
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .heroName{
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: .02em;
+      margin: 0 0 6px;
+      text-shadow: 0 2px 10px rgba(0,0,0,.65);
+    }
+    .heroStats{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px 12px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(255,255,255,.78);
+    }
+
+    .levelBar{
+      margin-top: 8px;
+      height: 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      overflow:hidden;
+    }
+    .levelFill{
+      height: 100%;
+      width: 12%;
+      background: linear-gradient(90deg, rgba(103,243,163,.85), rgba(103,243,163,.35));
+    }
+
+    /* ★中央に長文を見せる「流れる契約文」 */
+    .tickerBox{
+      margin-top: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.20);
+      border-radius: 14px;
+      overflow:hidden;
+      position: relative;
+    }
+    .ticker{
+      display:flex;
+      gap: 24px;
+      padding: 10px 0;
+      white-space: nowrap;
+      will-change: transform;
+      animation: scroll 18s linear infinite;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-shadow: 0 2px 10px rgba(0,0,0,.65);
+    }
+    .ticker span{
+      padding-left: 16px;
+      padding-right: 16px;
+      color: rgba(255,255,255,.92);
+    }
+    .ticker .danger{ color: rgba(255,95,95,.98); }
+    .ticker .good{ color: rgba(103,243,163,.98); }
+    @keyframes scroll{
+      0%{ transform: translateX(0); }
+      100%{ transform: translateX(-50%); }
+    }
+
+    /* 魔王（ラスボス） */
+    .boss{
+      margin-top: 14px;
+      background: rgba(120,0,0,.22);
+      border: 1px solid rgba(255,80,80,.22);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .bossHead{
+      padding: 10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,80,80,.20);
+    }
+    .bossTitle{
+      font-weight: 900;
+      letter-spacing: .06em;
+      color: rgba(255,220,220,.95);
+    }
+    .hpText{
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(255,255,255,.70);
+    }
+    .bossBody{
+      padding: 12px;
+      display:grid;
+      gap: 10px;
+      justify-items:center;
+      position: relative;
+    }
+    .bossImg{
+      width: min(420px, 92%);
+      aspect-ratio: 16/9;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      position: relative;
+    }
+    .bossImg img{
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,.55));
+    }
+
+    .bossMsg{
+      position:absolute;
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.45);
+      font-weight: 900;
+      letter-spacing: .04em;
+      color: rgba(255,225,225,.95);
+      text-align:center;
+    }
+
+    .hpBar{
+      width: min(520px, 96%);
+      height: 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      overflow:hidden;
+    }
+    .hpFill{
+      height: 100%;
+      width: 40%;
+      background: linear-gradient(90deg, rgba(255,75,75,.95), rgba(255,75,75,.35));
+    }
+
+    /* クエスト */
+    .quests{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px;
+    }
+    .quests h2{
+      margin: 0 0 10px;
+      font-size: 15px;
+      letter-spacing:.06em;
+      font-weight: 900;
+    }
+
+    .qList{ display:grid; gap: 12px; }
+
+    .quest{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      border-radius: 16px;
+      padding: 12px;
+      position: relative;
+      overflow:hidden;
+    }
+    .questTop{
+      display:flex;
+      gap: 12px;
+      align-items:center;
+    }
+
+    /* ★クエスト画像も大きく（見えるように） */
+    .qImg{
+      width: 140px;
+      height: 140px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex: 0 0 auto;
+    }
+    .qImg img{
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 10px 14px rgba(0,0,0,.55));
+    }
+    @media (max-width: 640px){
+      .qImg{ width: 110px; height: 110px; }
+    }
+
+    .qMeta{
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .qName{
+      font-weight: 900;
+      font-size: 14px;
+      margin: 0 0 4px;
+    }
+    .qDesc{
+      font-size: 12px;
+      color: rgba(255,255,255,.70);
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    .qActions{
+      margin-top: 10px;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .qBtn{
+      flex: 1 1 180px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.92);
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform .08s ease, background .15s ease;
+    }
+    .qBtn:hover{ background: rgba(255,255,255,.12); }
+    .qBtn:active{ transform: translateY(1px); }
+
+    .qBtn.done{
+      background: rgba(103,243,163,.14);
+      border-color: rgba(103,243,163,.35);
+      color: rgba(220,255,235,.95);
+    }
+
+    .qStamp{
+      font-weight: 900;
+      letter-spacing: .12em;
+      color: rgba(255,255,255,.18);
+      border: 3px solid rgba(255,255,255,.18);
+      padding: 8px 10px;
+      border-radius: 14px;
+      transform: rotate(-10deg);
+      position:absolute;
+      right: 14px;
+      top: 14px;
+      display:none;
+      user-select:none;
+    }
+    .quest.completed .qStamp{ display:block; }
+    .quest.completed{
+      border-color: rgba(103,243,163,.25);
+      background: rgba(0,0,0,.14);
+    }
+
+    /* クエスト上に流れる危機メッセージ */
+    .qTicker{
+      margin-top: 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      overflow:hidden;
+      position: relative;
+    }
+    .qTickerInner{
+      display:flex;
+      white-space: nowrap;
+      gap: 18px;
+      padding: 7px 0;
+      animation: scroll2 14s linear infinite;
+      font-weight: 900;
+      letter-spacing: .06em;
+      color: rgba(255,210,210,.92);
+      font-size: 12px;
+      text-shadow: 0 2px 10px rgba(0,0,0,.65);
+    }
+    .qTickerInner span{ padding: 0 14px; }
+    @keyframes scroll2{
+      0%{ transform: translateX(0); }
+      100%{ transform: translateX(-50%); }
+    }
+
+    /* ===== 成長ログ（追加） ===== */
+    .logPanel{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px;
+    }
+    .logPanel h2{
+      margin: 0 0 10px;
+      font-size: 15px;
+      letter-spacing:.06em;
+      font-weight: 900;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .logGrid{
+      display:grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 720px){
+      .logGrid{ grid-template-columns: 1fr; }
+    }
+    .logItem{
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      background: rgba(0,0,0,.18);
+      padding: 12px;
+      display:grid;
+      gap: 8px;
+    }
+    .logLabel{
+      font-size: 12px;
+      color: rgba(255,255,255,.78);
+      font-weight: 900;
+      letter-spacing: .06em;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .logUnit{
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,.60);
+      font-weight: 800;
+    }
+    .logInput{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.92);
+      font-weight: 900;
+      outline:none;
+      font-family: var(--mono);
+    }
+    .logInput::placeholder{ color: rgba(255,255,255,.40); }
+    .logFoot{
+      margin-top: 10px;
+      display:flex;
+      gap: 10px;
+      justify-content:flex-end;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+    .savedHint{
+      margin-right:auto;
+      font-size: 11px;
+      color: rgba(255,255,255,.62);
+    }
+
+    /* モーダル（初回入力 + 編集） */
+    .modalBack{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.62);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      z-index: 999;
+    }
+    .modal{
+      width: min(680px, 100%);
+      background: rgba(12,16,22,.92);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modalHead{
+      padding: 14px 14px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .modalHead h3{
+      margin:0;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing:.06em;
+    }
+    .modalBody{
+      padding: 14px;
+      display:grid;
+      gap: 12px;
+    }
+    .inp{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.92);
+      font-weight: 800;
+      outline:none;
+    }
+    .inp::placeholder{ color: rgba(255,255,255,.45); }
+    .row2{
+      display:grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 640px){
+      .row2{ grid-template-columns: 1fr; }
+    }
+    .modalFoot{
+      padding: 12px 14px 14px;
+      border-top: 1px solid rgba(255,255,255,.12);
+      display:flex;
+      gap: 10px;
+      justify-content:flex-end;
+      flex-wrap: wrap;
+    }
+
+    /* 折りたたみ */
+    .collapsed .contractBody{ display:none; }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <div class="wrap">
+
+    <!-- 常設 契約書（折りたたみ可） -->
+    <div class="contractDock">
+      <div id="contract" class="contract">
+        <div class="contractHeader">
+          <div class="badge danger">契約書</div>
+          <div class="contractTitle">逃げ道を塞ぐため、己を定義せよ。</div>
+          <button id="btnToggle" class="btn" type="button">折りたたむ</button>
+          <button id="btnEdit" class="btn primary" type="button">編集</button>
+        </div>
+
+        <div class="contractBody">
+          <div class="contractGrid">
+            <div class="field">
+              <div class="fieldLabel">アイデンティティ（1行）</div>
+              <div id="identityText" class="fieldValue good">（未設定）</div>
+            </div>
+            <div class="field">
+              <div class="fieldLabel">絶対に行きたくない未来（1行）</div>
+              <div id="doomText" class="fieldValue danger">（未設定）</div>
+            </div>
+          </div>
+          <div class="hint">
+            ※ここは<strong>常に表示</strong>されます（折りたたみ可）。<br>
+            ※「編集」で何度でも書き換え可能。保存はこのPC内(localStorage)にされます。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ヒーロー -->
+    <div class="main">
+      <section class="heroPanel">
+        <div class="topRow">
+          <div></div>
+          <div id="today" class="date">0000-00-00</div>
+        </div>
+
+        <div class="heroRow">
+          <div class="heroImg">
+            <img src="hero.png" alt="勇者" />
+          </div>
+          <div class="heroMeta">
+            <div class="heroName">勇者だいちゃん</div>
+            <div class="heroStats">
+              <div><strong>LV</strong> <span id="lv">1</span></div>
+              <div><strong>STR</strong>: <span id="str">0</span></div>
+              <div><strong>INT</strong>: <span id="int">0</span></div>
+              <div><strong>GOLD</strong>: <span id="gold">0</span></div>
+              <div>連続達成: <span id="streak">0</span>日</div>
+            </div>
+            <div class="levelBar" aria-label="経験値">
+              <div id="xpFill" class="levelFill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tickerBox" aria-label="契約文メッセージ">
+          <div id="mainTicker" class="ticker">
+            <span class="danger">最低ラインすら守れない未来が近づいてる。</span>
+            <span class="good">今日の最低ラインで、未来を回避できる。</span>
+            <span class="danger">言い訳が浮かんだ瞬間、弱い自分を倒せ。</span>
+            <span class="good">感情じゃない。習慣で動け。</span>
+            <span class="danger">最低ラインすら守れない未来が近づいてる。</span>
+            <span class="good">今日の最低ラインで、未来を回避できる。</span>
+            <span class="danger">言い訳が浮かんだ瞬間、弱い自分を倒せ。</span>
+            <span class="good">感情じゃない。習慣で動け。</span>
+          </div>
+        </div>
+
+        <!-- 魔王 -->
+        <div class="boss">
+          <div class="bossHead">
+            <div class="bossTitle">破滅竜（魔王）</div>
+            <div class="hpText">HP: <span id="bossHp">120</span> / <span id="bossHpMax">300</span></div>
+          </div>
+          <div class="bossBody">
+            <div class="bossImg">
+              <img src="demon.png" alt="魔王" />
+              <div id="bossMsg" class="bossMsg">最低ラインを守れ。今すぐ動け。</div>
+            </div>
+            <div class="hpBar"><div id="bossFill" class="hpFill"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- クエスト -->
+      <section class="quests">
+        <h2>デイリークエスト</h2>
+
+        <div class="qList">
+
+          <!-- 筋トレ -->
+          <div id="q1" class="quest" data-key="q1">
+            <div class="qStamp">達成</div>
+            <div class="questTop">
+              <div class="qImg"><img src="m1.png" alt="筋トレモンスター"></div>
+              <div class="qMeta">
+                <div class="qName">筋トレ</div>
+                <p class="qDesc">最低：ジャンプ1分　／　目標：筋トレ30分</p>
+              </div>
+            </div>
+            <div class="qTicker">
+              <div class="qTickerInner">
+                <span>動け。デブの未来を回避しろ。</span>
+                <span>1分でいい。今やれ。</span>
+                <span>最低ラインが、お前を救う。</span>
+                <span>動け。デブの未来を回避しろ。</span>
+                <span>1分でいい。今やれ。</span>
+                <span>最低ラインが、お前を救う。</span>
+              </div>
+            </div>
+            <div class="qActions">
+              <button class="qBtn" data-action="min">最低ライン達成</button>
+              <button class="qBtn" data-action="goal">目標達成</button>
+            </div>
+          </div>
+
+          <!-- 英語 -->
+          <div id="q2" class="quest" data-key="q2">
+            <div class="qStamp">達成</div>
+            <div class="questTop">
+              <div class="qImg"><img src="m2.png" alt="英語モンスター"></div>
+              <div class="qMeta">
+                <div class="qName">英語</div>
+                <p class="qDesc">最低：Duolingoを開いて1問　／　目標：英語学習60分</p>
+              </div>
+            </div>
+            <div class="qTicker">
+              <div class="qTickerInner">
+                <span>未来の自分が笑う。今、開け。</span>
+                <span>1問でいい。やれば勝ち。</span>
+                <span>積み上げだけが、英語を作る。</span>
+                <span>未来の自分が笑う。今、開け。</span>
+                <span>1問でいい。やれば勝ち。</span>
+                <span>積み上げだけが、英語を作る。</span>
+              </div>
+            </div>
+            <div class="qActions">
+              <button class="qBtn" data-action="min">最低ライン達成</button>
+              <button class="qBtn" data-action="goal">目標達成</button>
+            </div>
+          </div>
+
+          <!-- 副業 -->
+          <div id="q3" class="quest" data-key="q3">
+            <div class="qStamp">達成</div>
+            <div class="questTop">
+              <div class="qImg"><img src="m3.png" alt="副業モンスター"></div>
+              <div class="qMeta">
+                <div class="qName">副業</div>
+                <p class="qDesc">最低：PCを開いてChatGPTに「PC開いた」と報告　／　目標：副業60分</p>
+              </div>
+            </div>
+            <div class="qTicker">
+              <div class="qTickerInner">
+                <span>稼げない未来が近づく。今、起動。</span>
+                <span>1歩でいい。PCを開け。</span>
+                <span>毎日が、未来の収入になる。</span>
+                <span>稼げない未来が近づく。今、起動。</span>
+                <span>1歩でいい。PCを開け。</span>
+                <span>毎日が、未来の収入になる。</span>
+              </div>
+            </div>
+            <div class="qActions">
+              <button class="qBtn" data-action="min">最低ライン達成</button>
+              <button class="qBtn" data-action="goal">目標達成</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== 成長ログ（追加） ===== -->
+      <section class="logPanel" aria-label="成長ログ">
+        <h2>
+          成長ログ（現実の報告）
+          <span class="hint" id="weekLabel">今週：----</span>
+        </h2>
+
+        <div class="logGrid">
+          <div class="logItem">
+            <div class="logLabel">体重 <span class="logUnit">kg（今日）</span></div>
+            <input id="inpWeight" class="logInput" inputmode="decimal" placeholder="例：93.0" />
+          </div>
+
+          <div class="logItem">
+            <div class="logLabel">勉強時間 <span class="logUnit">分（今日合計）</span></div>
+            <input id="inpStudy" class="logInput" inputmode="numeric" placeholder="例：60" />
+          </div>
+
+          <div class="logItem">
+            <div class="logLabel">副業時間 <span class="logUnit">分（今日合計）</span></div>
+            <input id="inpSide" class="logInput" inputmode="numeric" placeholder="例：45" />
+          </div>
+
+          <div class="logItem">
+            <div class="logLabel">今週の副業収益 <span class="logUnit">円（週ごと）</span></div>
+            <input id="inpMoney" class="logInput" inputmode="numeric" placeholder="例：12000" />
+          </div>
+        </div>
+
+        <div class="logFoot">
+          <div id="savedHint" class="savedHint">未保存</div>
+          <button id="btnLogSave" class="btn primary" type="button">保存</button>
+          <button id="btnLogClearToday" class="btn" type="button">今日のログだけ消す</button>
+          <button id="btnLogClearWeek" class="btn danger" type="button">今週の収益だけ消す</button>
+        </div>
+
+        <div class="hint" style="margin-top:8px;">
+          ※体重/勉強/副業時間は<strong>日付ごと</strong>に保存。<br>
+          ※今週の副業収益は<strong>週ごと</strong>に保存（週が変わると別枠になります）。
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- 初回/編集モーダル -->
+  <div id="modalBack" class="modalBack" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modalHead">
+        <h3>契約の刻：己を定義せよ</h3>
+        <button id="btnClose" class="btn" type="button">閉じる</button>
+      </div>
+      <div class="modalBody">
+        <div class="row2">
+          <div>
+            <div class="hint" style="margin-bottom:6px;font-weight:800;letter-spacing:.08em;">アイデンティティ（1行）</div>
+            <input id="inpIdentity" class="inp" placeholder="例：言い訳が浮かんだ瞬間、弱い自分を倒し、習慣で動く男" />
+          </div>
+          <div>
+            <div class="hint" style="margin-bottom:6px;font-weight:800;letter-spacing:.08em;">絶対に行きたくない未来（1行）</div>
+            <input id="inpDoom" class="inp" placeholder="例：デブで1円も稼げず、死んだ目で会社に行く未来" />
+          </div>
+        </div>
+        <div class="hint">
+          ※保存するとこのPC内に記録され、次回から自動で表示されます。<br>
+          ※後から「編集」でいつでも変更OK。
+        </div>
+      </div>
+      <div class="modalFoot">
+        <button id="btnSave" class="btn primary" type="button">保存する</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== 日付 ======
+    const today = new Date();
+    const pad = (n)=> String(n).padStart(2,"0");
+    const ymd = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+    document.getElementById("today").textContent = ymd;
+
+    // ====== localStorage keys ======
+    const LS_IDENTITY = "rq_identity";
+    const LS_DOOM = "rq_doom";
+    const LS_COLLAPSED = "rq_contract_collapsed";
+    const LS_PROGRESS = "rq_progress_" + ymd; // 日付ごとに達成を管理
+    const LS_STREAK = "rq_streak";
+    const LS_LASTDONE = "rq_lastdone";
+
+    // ====== 成長ログ keys（追加） ======
+    const LS_LOG_DAILY = "rq_log_daily_" + ymd;     // {weight, studyMin, sideMin}
+    const LS_LOG_WEEKLY_PREFIX = "rq_log_week_";    // rq_log_week_YYYY-MM-DD (その週の月曜)
+
+    // ====== 要素 ======
+    const contract = document.getElementById("contract");
+    const identityText = document.getElementById("identityText");
+    const doomText = document.getElementById("doomText");
+    const btnToggle = document.getElementById("btnToggle");
+    const btnEdit = document.getElementById("btnEdit");
+
+    const modalBack = document.getElementById("modalBack");
+    const btnClose = document.getElementById("btnClose");
+    const btnSave = document.getElementById("btnSave");
+    const inpIdentity = document.getElementById("inpIdentity");
+    const inpDoom = document.getElementById("inpDoom");
+
+    const bossHpEl = document.getElementById("bossHp");
+    const bossHpMaxEl = document.getElementById("bossHpMax");
+    const bossFill = document.getElementById("bossFill");
+    const bossMsg = document.getElementById("bossMsg");
+
+    const lvEl = document.getElementById("lv");
+    const strEl = document.getElementById("str");
+    const intEl = document.getElementById("int");
+    const goldEl = document.getElementById("gold");
+    const streakEl = document.getElementById("streak");
+    const xpFill = document.getElementById("xpFill");
+
+    // ====== 成長ログ要素（追加） ======
+    const inpWeight = document.getElementById("inpWeight");
+    const inpStudy  = document.getElementById("inpStudy");
+    const inpSide   = document.getElementById("inpSide");
+    const inpMoney  = document.getElementById("inpMoney");
+    const btnLogSave = document.getElementById("btnLogSave");
+    const btnLogClearToday = document.getElementById("btnLogClearToday");
+    const btnLogClearWeek = document.getElementById("btnLogClearWeek");
+    const savedHint = document.getElementById("savedHint");
+    const weekLabel = document.getElementById("weekLabel");
+
+    // ====== 初期値 ======
+    let bossHpMax = 300;
+    let bossHp = 120;
+
+    function renderBoss(){
+      bossHpEl.textContent = bossHp;
+      bossHpMaxEl.textContent = bossHpMax;
+      const pct = Math.max(0, Math.min(100, (bossHp / bossHpMax) * 100));
+      bossFill.style.width = pct + "%";
+
+      if (pct <= 15){
+        bossMsg.textContent = "あと一撃。今日の最低ラインで終わらせろ。";
+      } else if (pct <= 35){
+        bossMsg.textContent = "逃げるな。今ここで削れ。";
+      } else {
+        bossMsg.textContent = "最低ラインを守れ。今すぐ動け。";
+      }
+    }
+    renderBoss();
+
+    // ====== 契約書（常設表示） ======
+    function loadContract(){
+      const idt = localStorage.getItem(LS_IDENTITY) || "";
+      const doom = localStorage.getItem(LS_DOOM) || "";
+      identityText.textContent = idt ? idt : "（未設定）";
+      doomText.textContent = doom ? doom : "（未設定）";
+
+      if(!idt || !doom){
+        openModal(true);
+      }
+    }
+
+    function openModal(force=false){
+      inpIdentity.value = localStorage.getItem(LS_IDENTITY) || "";
+      inpDoom.value = localStorage.getItem(LS_DOOM) || "";
+      modalBack.style.display = "flex";
+      setTimeout(()=> inpIdentity.focus(), 60);
+    }
+    function closeModal(){
+      modalBack.style.display = "none";
+    }
+
+    btnEdit.addEventListener("click", ()=> openModal(false));
+    btnClose.addEventListener("click", closeModal);
+    modalBack.addEventListener("click", (e)=>{
+      if(e.target === modalBack) closeModal();
+    });
+
+    btnSave.addEventListener("click", ()=>{
+      const idt = (inpIdentity.value || "").trim();
+      const doom = (inpDoom.value || "").trim();
+      if(!idt || !doom){
+        alert("アイデンティティと、絶対に行きたくない未来を両方入れてください。");
+        return;
+      }
+      localStorage.setItem(LS_IDENTITY, idt);
+      localStorage.setItem(LS_DOOM, doom);
+      loadContract();
+      closeModal();
+    });
+
+    // 折りたたみ状態
+    function applyCollapsed(){
+      const collapsed = localStorage.getItem(LS_COLLAPSED) === "1";
+      contract.classList.toggle("collapsed", collapsed);
+      btnToggle.textContent = collapsed ? "開く" : "折りたたむ";
+    }
+    btnToggle.addEventListener("click", ()=>{
+      const now = contract.classList.contains("collapsed");
+      localStorage.setItem(LS_COLLAPSED, now ? "0" : "1");
+      applyCollapsed();
+    });
+
+    // ====== クエスト達成状態 ======
+    function getProgress(){
+      try{
+        return JSON.parse(localStorage.getItem(LS_PROGRESS) || "{}");
+      }catch(e){ return {}; }
+    }
+    function setProgress(obj){
+      localStorage.setItem(LS_PROGRESS, JSON.stringify(obj));
+    }
+
+    function updateStats(){
+      const prog = getProgress();
+      const score = ["q1","q2","q3"].reduce((acc,k)=> acc + (prog[k]||0), 0);
+
+      const lv = 1 + Math.floor(score / 4);
+      const str = (prog.q1||0) * 2;
+      const intv = (prog.q2||0) * 2;
+      const gold = (prog.q3||0) * 50;
+
+      lvEl.textContent = lv;
+      strEl.textContent = str;
+      intEl.textContent = intv;
+      goldEl.textContent = gold;
+
+      const xp = (score % 4) / 4 * 100;
+      xpFill.style.width = Math.max(12, xp) + "%";
+
+      const damage = ["q1","q2","q3"].reduce((acc,k)=>{
+        const v = prog[k]||0;
+        if(v===1) return acc + 10;
+        if(v===2) return acc + 20;
+        return acc;
+      }, 0);
+
+      bossHp = Math.max(0, 300 - damage);
+      renderBoss();
+
+      const cleared = score > 0;
+      const lastDone = localStorage.getItem(LS_LASTDONE) || "";
+      let streak = parseInt(localStorage.getItem(LS_STREAK) || "0", 10);
+
+      if(cleared && lastDone !== ymd){
+        const d = new Date(today);
+        d.setDate(d.getDate()-1);
+        const ymdYesterday = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+        if(lastDone === ymdYesterday){
+          streak += 1;
+        }else{
+          streak = 1;
+        }
+        localStorage.setItem(LS_STREAK, String(streak));
+        localStorage.setItem(LS_LASTDONE, ymd);
+      }
+      streakEl.textContent = localStorage.getItem(LS_STREAK) || "0";
+    }
+
+    function renderQuests(){
+      const prog = getProgress();
+      document.querySelectorAll(".quest").forEach(q=>{
+        const key = q.dataset.key;
+        const v = prog[key] || 0;
+
+        q.classList.toggle("completed", v>0);
+
+        const btnMin = q.querySelector('[data-action="min"]');
+        const btnGoal = q.querySelector('[data-action="goal"]');
+
+        btnMin.classList.toggle("done", v===1 || v===2);
+        btnGoal.classList.toggle("done", v===2);
+
+        btnMin.textContent = (v===1 || v===2) ? "最低ライン達成済み" : "最低ライン達成";
+        btnGoal.textContent = (v===2) ? "目標達成済み" : "目標達成";
+      });
+    }
+
+    function setQuest(key, val){
+      const prog = getProgress();
+      prog[key] = Math.max(prog[key]||0, val);
+      setProgress(prog);
+      renderQuests();
+      updateStats();
+    }
+
+    document.querySelectorAll(".quest .qBtn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const quest = btn.closest(".quest");
+        const key = quest.dataset.key;
+        const action = btn.dataset.action;
+        if(action==="min") setQuest(key, 1);
+        if(action==="goal") setQuest(key, 2);
+      });
+    });
+
+    // ====== 成長ログ（追加） ======
+    function toNumOrEmpty(v){
+      const t = (v ?? "").toString().trim();
+      if(!t) return "";
+      const n = Number(t.replace(/,/g,""));
+      return Number.isFinite(n) ? n : "";
+    }
+
+    function getMondayKey(d){
+      const x = new Date(d);
+      const day = x.getDay(); // 0=日
+      const diff = (day===0 ? -6 : 1 - day); // 月曜に寄せる
+      x.setDate(x.getDate() + diff);
+      const key = `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
+      return key;
+    }
+
+    const weekKey = getMondayKey(today);
+    const LS_LOG_WEEKLY = LS_LOG_WEEKLY_PREFIX + weekKey;
+    weekLabel.textContent = `今週：${weekKey}〜`;
+
+    function loadDailyLog(){
+      try{
+        const obj = JSON.parse(localStorage.getItem(LS_LOG_DAILY) || "{}");
+        inpWeight.value = (obj.weight ?? "") === "" ? "" : obj.weight;
+        inpStudy.value  = (obj.studyMin ?? "") === "" ? "" : obj.studyMin;
+        inpSide.value   = (obj.sideMin ?? "") === "" ? "" : obj.sideMin;
+      }catch(e){
+        inpWeight.value = "";
+        inpStudy.value = "";
+        inpSide.value = "";
+      }
+    }
+
+    function loadWeeklyMoney(){
+      const v = localStorage.getItem(LS_LOG_WEEKLY) || "";
+      inpMoney.value = v;
+    }
+
+    function setSavedHint(msg){
+      savedHint.textContent = msg;
+    }
+
+    function saveLogs(){
+      const weight = toNumOrEmpty(inpWeight.value);
+      const studyMin = toNumOrEmpty(inpStudy.value);
+      const sideMin  = toNumOrEmpty(inpSide.value);
+      const money    = toNumOrEmpty(inpMoney.value);
+
+      const daily = {
+        weight: weight === "" ? "" : Number(weight),
+        studyMin: studyMin === "" ? "" : Math.max(0, Math.floor(studyMin)),
+        sideMin: sideMin === "" ? "" : Math.max(0, Math.floor(sideMin)),
+      };
+      localStorage.setItem(LS_LOG_DAILY, JSON.stringify(daily));
+
+      if(money === ""){
+        localStorage.setItem(LS_LOG_WEEKLY, "");
+      }else{
+        localStorage.setItem(LS_LOG_WEEKLY, String(Math.max(0, Math.floor(money))));
+      }
+
+      setSavedHint(`保存済み（${new Date().toLocaleTimeString()}）`);
+    }
+
+    btnLogSave.addEventListener("click", saveLogs);
+
+    btnLogClearToday.addEventListener("click", ()=>{
+      if(!confirm("今日のログ（体重/勉強/副業時間）だけ消す？")) return;
+      localStorage.removeItem(LS_LOG_DAILY);
+      loadDailyLog();
+      setSavedHint("今日のログを削除した");
+    });
+
+    btnLogClearWeek.addEventListener("click", ()=>{
+      if(!confirm("今週の副業収益だけ消す？")) return;
+      localStorage.setItem(LS_LOG_WEEKLY, "");
+      loadWeeklyMoney();
+      setSavedHint("今週の収益を削除した");
+    });
+
+    // 入力したら「未保存」表示
+    [inpWeight, inpStudy, inpSide, inpMoney].forEach(el=>{
+      el.addEventListener("input", ()=> setSavedHint("未保存（保存ボタンを押して）"));
+    });
+
+    // ====== 起動処理 ======
+    loadContract();
+    applyCollapsed();
+    renderQuests();
+    updateStats();
+    loadDailyLog();
+    loadWeeklyMoney();
+    setSavedHint("読み込み完了（必要なら保存）");
+  </script>
+</body>
+</html>
